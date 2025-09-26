@@ -1,15 +1,3 @@
-# =========================
-# DELETE FAVORITE
-# =========================
-
-@app.route('/favorite/planet/<int:favorite_id>', methods=['DELETE'])
-def delete_planet_favorite(favorite_id):
-    favorite = Favorite.query.get(favorite_id)
-    if not favorite:
-        return jsonify({"error": "Favorito no encontrado"}), 404
-    db.session.delete(favorite)
-    db.session.commit()
-    return jsonify({"msg": "Favorito eliminado"}), 200
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
@@ -61,7 +49,7 @@ def sitemap():
 @app.route('/users', methods=['GET'])
 def get_users():
     users = User.query.all()
-    return jsonify([users.serialize() for u in users]), 200
+    return jsonify([u.serialize() for u in users]), 200
 
 
 @app.route('/users/<int:user_id>', methods=['GET'])
@@ -194,6 +182,34 @@ def add_people_favorite(character_id):
     return jsonify(favorite.serialize()), 201
 
 
+@app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
+def delete_planet_favorite(planet_id):
+    data = request.get_json()
+    user_id = data.get('user_id')
+    if not user_id:
+        return jsonify({"error": "usuario no encontrado"})
+    favorite = Favorite.query.filter_by(
+        user_id=user_id, planet_id=planet_id).first()
+    if not favorite:
+        return jsonify({"error": "favorito no encontrado"})
+    db.session.delete(favorite)
+    db.session.commit()
+    return jsonify({"msg": "favorito eliminado"}), 200
+
+
+@app.route('/favorite/people/<int:character_id>', methods=['DELETE'])
+def delete_people_favorite(character_id):
+    data = request.get_json()
+    user_id = data.get('user_id')
+    if not user_id:
+        return jsonify({"error": "usuario no encontrado"})
+    favorite = Favorite.query.filter_by(
+        user_id=user_id, character_id=character_id).first()
+    if not favorite:
+        return jsonify({"error": "favorito no encontrado"})
+    db.session.delete(favorite)
+    db.session.commit()
+    return jsonify({"msg": "favorito eliminado"}), 200
 
     # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
